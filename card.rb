@@ -1,5 +1,8 @@
+# frozen_string_literal: true
+
 class Card
   attr_reader :suite, :rank, :value
+
   def initialize(suite, rank)
     @suite = suite
     @rank = rank

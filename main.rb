@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 require_relative 'card_deck'
 require_relative 'player'
 require_relative 'game'
 require_relative 'interface'
-require_relative'card'
+require_relative 'card'
 
 dealer = Player.new('Dealer')
 player_name = enter_player_name
@@ -26,4 +28,4 @@ loop do
   answer = play_again?
   game.restart_game(answer)
   break if answer == :n || game.game_over?
-end  
+end
