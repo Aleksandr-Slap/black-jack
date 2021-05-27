@@ -8,9 +8,10 @@ class Game
   DEALER_LIMIT = 17
   BANK = 100
 
-  attr_reader :player, :dealer, :card_deck, :game_bank
+  attr_reader :player, :dealer, :card_deck, :game_bank, :hand
 
-  def initialize(player, dealer)
+  def initialize(player, dealer, hand)
+    @hand = hand
     @dealer = dealer
     @player = player
     @card_deck = CardDeck.new
@@ -28,35 +29,36 @@ class Game
   end
 
   def deal_cards_first_time
-    2.times { give_card_to(player) }
-    2.times { give_card_to(dealer) }
+    2.times { give_card_to_player }
+    2.times { give_card_to_dealer }
   end
 
   def player_action(action)
     case action
     when :add_card
-      give_card_to(player)
+      give_card_to_player
       dealer_move
     when :skip
       dealer_move
     end
   end
 
+  # rubocop:disable Style/GuardClause
   def player_action_two(action)
-    case action
-    when :add_card
-      give_card_to(player)
-    when :skip
-      dealer_move
+    if action == :add_card
+      give_card_to_player
+      # when :skip
+      #   dealer_move
     end
   end
+  # rubocop:enable Style/GuardClause
 
   def player_cards
-    player.cards
+    hand.cards_player
   end
 
   def player_points
-    player.points
+    hand.points_player
   end
 
   def player_bank
@@ -64,21 +66,29 @@ class Game
   end
 
   def dealer_cards
-    dealer.cards
+    hand.dealer_cards
   end
 
   def dealer_points
-    dealer.points
+    hand.dealer_points
   end
 
   # rubocop:disable Style/IdenticalConditionalBranches
   def dealer_move
-    if dealer.points < DEALER_LIMIT
-      give_card_to(dealer)
+    if hand.points_dealer < DEALER_LIMIT
+      give_card_to_dealer
       player_action_two(enter_player_action_next)
     else
       player_action_two(enter_player_action_next)
     end
+  end
+
+  def enter_player_action_next
+    puts 'The dealer made a move. Your turn.'
+    puts '1. Add card'
+    puts '2. Open cards'
+    action = gets.chomp.to_i
+    :add_card if action == 1
   end
 
   # rubocop:enable Style/IdenticalConditionalBranches
@@ -89,11 +99,11 @@ class Game
 
   # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/AbcSize
   def result
-    if (player_points <= LIMIT_POINTS && player_points > dealer_points) ||
-       (player_points <= LIMIT_POINTS && dealer_points > LIMIT_POINTS)
+    if (hand.player_points <= LIMIT_POINTS && hand.player_points > hand.points_dealer) ||
+       (hand.player_points <= LIMIT_POINTS && hand.points_dealer > LIMIT_POINTS)
       :player_win
-    elsif (dealer_points <= LIMIT_POINTS && dealer_points > player_points) ||
-          (dealer_points <= LIMIT_POINTS && player_points > LIMIT_POINTS)
+    elsif (hand.points_dealer <= LIMIT_POINTS && hand.points_dealer > hand.player_points) ||
+          (hand.points_dealer <= LIMIT_POINTS && hand.player_points > LIMIT_POINTS)
       puts 'Dealer win.'
       :dealer_win
     else
@@ -129,8 +139,12 @@ class Game
 
   attr_writer :game_bank, :card_deck
 
-  def give_card_to(player)
-    player.add_card(card_deck.draw_card) if player.cards.size < 3
+  def give_card_to_player
+    hand.add_card_player(card_deck.draw_card) if hand.cards_player.size < 3
+  end
+
+  def give_card_to_dealer
+    hand.add_card_dealer(card_deck.draw_card) if hand.cards_dealer.size < 3
   end
 
   def return_bank
@@ -139,9 +153,17 @@ class Game
   end
 
   def clear_cards
-    player.clear_cards
-    dealer.clear_cards
+    hand.clear_card
   end
 end
+# dealer = Player.new('Dealer')
+# player = Player.new('Sasha')
+# hand = Hand.new(dealer, player)
+# game = Game.new(player, dealer,hand)
+# dec = CardDeck.new
+
+# p game.deal_cards_first_time
+# p hand.cards_player
+# p hand.cards_dealer
 
 # rubocop:enable Metrics/ClassLength
