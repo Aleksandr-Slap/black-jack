@@ -1,1 +1,3 @@
-Black Jack game
+Black Jack game.
+
+Educational project built on the basis of the OOP language Ruby
